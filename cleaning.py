@@ -2,3 +2,11 @@
 # @Date: 6/18/2025, last mod: 6/19/2025
 # @Author: Logan Powser
 # @Abstract: Data cleaning functions for Machine Failure dataset from Kaggle
+
+import pandas as pd
+
+def load_data(df:pd.DataFrame):
+    pass
+
+def clean_data(df:pd.DataFrame):
+    pass

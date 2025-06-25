@@ -14,15 +14,15 @@ def corr_map(df:pd.DataFrame, name='Machine Failure Dataset', save=False):
     sns.heatmap(df.corr(), annot=True, cmap='inferno')
     plt.title(f'Correlation Matrix of {name}')
     plt.tight_layout()
-    if save: plt.savefig(f'{name}_corr_map.png')
+    if save: plt.savefig(f'graphs/{name}_corr_map.png')
     plt.show()
 
 def plot_distr(df:pd.DataFrame, name='Machine Failure Dataset', save=False):
     for col in df.columns:
-        df[col].plot.hist(bins=10, label=col)
+        df[col].plot.hist(label=col)
         plt.title(f'Distribution of {col}')
         plt.tight_layout()
-        if save: plt.savefig(f'{name}_distr.png')
+        if save: plt.savefig(f'graphs/{name}_{col}_distr.png')
         plt.show()
 
 def scatter(df: pd.DataFrame, x:str, y:str, save=False) -> None:
@@ -35,7 +35,7 @@ def scatter(df: pd.DataFrame, x:str, y:str, save=False) -> None:
     save (bool, optional): Whether to save the plot. Defaults to False.
   """
 
-  sns.scatterplot(df, x=x, y=y)
+  sns.scatterplot(df, x=x, y=y, alpha=0.2)
   plt.title(f'{x} vs. {y}')
   plt.xlabel(f'{x}')
   plt.ylabel(f'{y}')
