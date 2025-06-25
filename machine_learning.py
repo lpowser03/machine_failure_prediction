@@ -8,6 +8,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, make_scorer
+from cleaning import load_data, clean_data
 import mlflow
 import mlflow.sklearn
 import pandas as pd
@@ -16,6 +17,8 @@ import numpy as np
 mlflow.set_tracking_uri('http://localhost:8000')
 mlflow.set_experiment('Machine_Failure_Prediction')
 
+def get_model(model_type, model_params):
+    pass
 
 def run_experiment(model_type, model_params, feature_sets=None, experiment_name="Machine_Failure_Prediction"):
     """
