@@ -1,5 +1,5 @@
 # @Title: Machine Learning for Machine Failure dataset
-# @Date: 6/18/2025, last mod: 6/19/2025
+# @Date: 6/18/2025, last mod: 6/25/2025
 # @Author: Logan Powser
 # @Abstract: ML functions for Machine Failure dataset from Kaggle
 
@@ -12,9 +12,7 @@ from cleaning import load_data, clean_data, create_features
 import mlflow
 import mlflow.sklearn
 
-
-mlflow.set_tracking_uri('http://localhost:8000')
-mlflow.set_experiment('Machine_Failure_Prediction')
+print("👋 run_experiments.py is running under __main__")
 
 def get_model(model_type:str, model_params:dict):
     params = model_params.copy()
@@ -42,6 +40,7 @@ def run_experiment(model_type:str, model_params:dict, feature_sets:list[str]=["b
     experiment_name : str
         Name of the MLFlow experiment
     """
+    mlflow.set_tracking_uri('http://localhost:5000')
     mlflow.set_experiment(experiment_name)
 
     #generate run name
@@ -76,7 +75,7 @@ def run_experiment(model_type:str, model_params:dict, feature_sets:list[str]=["b
 
         X_train, X_test, y_train, y_test = train_test_split(X.values, y.values, test_size=0.3, random_state=42)
 
-        cv_results = cross_val_score(model, X_train, y_train, cv=KFold(n_splits=5), scoring=metrics)
+        cv_results = cross_val_score(model, X_train, y_train, cv=KFold(n_splits=5), scoring='accuracy')
         print(f"CV Results: {cv_results}")
         print(f"Mean Accuracy: {cv_results.mean()}")
         print(f"Standard Deviation: {cv_results.std()}")
