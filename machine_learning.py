@@ -8,19 +8,26 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, make_scorer
-from cleaning import load_data, clean_data
+from cleaning import load_data, clean_data, create_features
 import mlflow
 import mlflow.sklearn
-import pandas as pd
-import numpy as np
+
 
 mlflow.set_tracking_uri('http://localhost:8000')
 mlflow.set_experiment('Machine_Failure_Prediction')
 
-def get_model(model_type, model_params):
-    pass
+def get_model(model_type:str, model_params:dict):
+    params = model_params.copy()
+    if model_type == 'logistic':
+        return LogisticRegression(**params)
+    elif model_type == 'decision_tree':
+        return DecisionTreeClassifier(**params)
+    elif model_type == 'random_forest':
+        return RandomForestClassifier(**params)
+    else:
+        raise ValueError(f"Invalid model type: {model_type}")
 
-def run_experiment(model_type, model_params, feature_sets=None, experiment_name="Machine_Failure_Prediction"):
+def run_experiment(model_type:str, model_params:dict, feature_sets:list[str]=["base"], experiment_name:str="Machine_Failure_Prediction"):
     """
     Run a complete MLFlow experiment with specified model and features
 
@@ -44,7 +51,9 @@ def run_experiment(model_type, model_params, feature_sets=None, experiment_name=
     else:
         run_name = f"{model_type}_base_features"
 
+    #turn on MLFlow autologging for SKLEARN models
     mlflow.sklearn.autolog()
+
     # Create MLFlow run
     with mlflow.start_run(run_name=run_name):
 
@@ -65,61 +74,13 @@ def run_experiment(model_type, model_params, feature_sets=None, experiment_name=
             'recall': make_scorer(recall_score)
         }
 
-        cv_results = cross_val_score(model, X, y, cv=KFold(n_splits=5), scoring=metrics)
-        # print(f"CV Results: {cv_results}")
-        # print(f"Mean Accuracy: {cv_results.mean()}")
-        # print(f"Standard Deviation: {cv_results.std()}")
+        X_train, X_test, y_train, y_test = train_test_split(X.values, y.values, test_size=0.3, random_state=42)
+
+        cv_results = cross_val_score(model, X_train, y_train, cv=KFold(n_splits=5), scoring=metrics)
+        print(f"CV Results: {cv_results}")
+        print(f"Mean Accuracy: {cv_results.mean()}")
+        print(f"Standard Deviation: {cv_results.std()}")
+
+        return cv_results.mean()
 
 
-def create_features(df:pd.DataFrame, feature_set="base"):
-    """
-    Create engineered features based on specified feature sets.
-
-    Parameters:
-    -----------
-    df : pandas DataFrame
-        Original dataframe with raw features
-    feature_sets : list or None
-        List of feature engineering techniques to apply.
-        If None, only returns base features.
-
-    Returns:
-    --------
-    X : pandas DataFrame
-        DataFrame with original and engineered features
-    feature_details : dict
-        Dictionary with information about which features were created
-    """
-    # Start with a copy of the original data
-    X = df.copy()
-
-    # Initialize tracking dictionary
-    feature_details = {
-        "base_features": list(X.columns),
-        "engineered_features": [],
-        "applied_techniques": []
-    }
-
-    # If no feature sets specified, return base features only
-    if feature_set is None:
-        return X, feature_details
-
-    # Apply specified feature engineering techniques
-    for technique in feature_set:
-        if technique == "safety_indicators":
-            # You'll implement the actual feature engineering here
-
-            # Track the technique and resulting features
-            feature_details["applied_techniques"].append("safety_indicators")
-            feature_details["engineered_features"].extend(["is_VOC_safe", "is_USS_safe", "is_AQ_safe"])
-
-        elif technique == "temperature_interactions":
-            # Implement temperature interaction features
-            # ...
-
-            feature_details["applied_techniques"].append("temperature_interactions")
-            feature_details["engineered_features"].extend(["temp_ip_ratio", "temp_deviation"])
-
-        # Add more techniques as needed
-
-    return X, feature_details

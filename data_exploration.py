@@ -10,11 +10,12 @@ import seaborn as sns
 sns.set_theme('notebook', 'whitegrid')
 
 def explore(df:pd.DataFrame, name='Machine Failure Dataset'):
-    #corr_map(df, name)
-    #plot_distr(df, name)
+    corr_map(df, name)
+    plot_distr(df, name)
     scatter(df, 'AQ', 'fail')
     scatter(df, 'USS', 'fail')
     scatter(df, 'VOC', 'fail')
+    scatter(df, 'CS', 'USS')
     scatter(df, 'RP', 'tempMode')
     scatter(df, 'IP', 'Temperature')
     #pass

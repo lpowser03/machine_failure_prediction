@@ -19,8 +19,9 @@ def corr_map(df:pd.DataFrame, name='Machine Failure Dataset', save=False):
 
 def plot_distr(df:pd.DataFrame, name='Machine Failure Dataset', save=False):
     for col in df.columns:
-        df[col].plot.hist(label=col)
+        df[col].plot.hist()
         plt.title(f'Distribution of {col}')
+        plt.xlabel(f'{col}')
         plt.tight_layout()
         if save: plt.savefig(f'graphs/{name}_{col}_distr.png')
         plt.show()
