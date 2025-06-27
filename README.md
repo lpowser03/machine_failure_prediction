@@ -15,3 +15,9 @@ This dataset contains sensor data collected from various machines, with the aim 
 - IP: Input pressure to the machine.
 - Temperature: The operating temperature of the machine.
 - fail: Binary indicator of machine failure (1 for failure, 0 for no failure).
+
+## Results
+- LogisticRegression - BASE CV/Test Accuracy: ~0.92/0.88:
+- ![LogisticRegression Performance](mlflow_results/logistic_performance0.png)
+- RandomForestClassifier - BASE CV/Test Accuracy: ~0.92/0.88:
+- ![RandomForest Performance](mlflow_results/random_forest0_performance.png)

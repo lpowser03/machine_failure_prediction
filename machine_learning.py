@@ -80,6 +80,14 @@ def run_experiment(model_type:str, model_params:dict, feature_sets:list[str]=["b
         print(f"Mean Accuracy: {cv_results.mean()}")
         print(f"Standard Deviation: {cv_results.std()}")
 
-        return cv_results.mean()
+        model.fit(X_train, y_train)
 
+        return model, cv_results.mean(), (X_test, y_test)
 
+def final_testing(model, X_test_data, y_test_data):
+    model.predict(X_test_data)
+    y_pred = model.predict(X_test_data)
+    print(f"Accuracy Score: {accuracy_score(y_test_data, y_pred)}")
+    print(f"F1 Score: {f1_score(y_test_data, y_pred)}")
+    print(f"Precision Score: {precision_score(y_test_data, y_pred)}")
+    print(f"Recall Score: {recall_score(y_test_data, y_pred)}")

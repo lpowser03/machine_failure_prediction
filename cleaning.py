@@ -51,9 +51,9 @@ def create_features(df: pd.DataFrame, feature_sets: list[str] = "base"):
     # Apply specified feature engineering techniques
     for technique in feature_sets:
         if technique == "safety_indicators":
-            is_AQ_safe = X["AQ"] == 1 | X["AQ"] == 2
-            is_USS_safe = X["USS"] == 6 | X["USS"] == 7
-            is_VOC_safe = X["VOC"] == 0 | X["VOC"] == 2
+            is_AQ_safe = X["AQ"].isin((1,2))
+            is_USS_safe = X["USS"].isin((6,7))
+            is_VOC_safe = X["VOC"].isin((0,2))
             safety_score = is_AQ_safe + is_USS_safe + is_VOC_safe
 
             X["is_AQ_safe"] = is_AQ_safe

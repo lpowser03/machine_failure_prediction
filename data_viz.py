@@ -6,7 +6,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from IPython.core.pylabtools import figsize
 
 
 def corr_map(df:pd.DataFrame, name='Machine Failure Dataset', save=False):
