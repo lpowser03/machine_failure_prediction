@@ -4,6 +4,7 @@
 # @Abstract: Data cleaning functions for Machine Failure dataset from Kaggle
 
 import pandas as pd
+import numpy as np
 
 def load_data():
     return pd.read_csv('data/data.csv')
@@ -66,21 +67,29 @@ def create_features(df: pd.DataFrame, feature_sets: list[str] = "base"):
             feature_details["engineered_features"].extend(["is_VOC_safe", "is_USS_safe", "is_AQ_safe", "safety_score"])
 
         elif technique == "temperature_interactions":
-            temp_mode_ratio = X["Temperature"] / X["tempMode"]
+            temp_mode_ratio = np.where(X['tempMode'] != 0,
+                                       X['Temperature'] / X['tempMode'],
+                                       0)
             temp_ip_interaction = X["IP"] * X["Temperature"]
+            is_tempMode_zero = X['tempMode'] == 0
 
             X["temp_mode_ratio"] = temp_mode_ratio
             X["temp_ip_interaction"] = temp_ip_interaction
+            X["is_tempMode_zero"] = is_tempMode_zero
 
             feature_details["applied_techniques"].append("temperature_interactions")
             feature_details["engineered_features"].extend(["temp_ip_interaction", "temp_mode_ratio"])
 
         elif technique == "operational_modes":
             cs_uss_diagonal = X['CS'] == X['USS']
-            rp_mode_ratio = X['RP'] / X['tempMode']
+            rp_mode_ratio = np.where(X['tempMode'] != 0,
+                                     X['RP'] / X['tempMode'],
+                                     0)
+            is_tempMode_zero = X['tempMode'] == 0
 
             X['cs_uss_diagonal'] = cs_uss_diagonal
             X['rp_mode_ratio'] = rp_mode_ratio
+            X["is_tempMode_zero"] = is_tempMode_zero
 
             feature_details["applied_techniques"].append("operational_modes")
             feature_details["engineered_features"].extend(["cs_uss_diagonal", "rp_mode_ratio"])

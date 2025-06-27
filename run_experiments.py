@@ -7,9 +7,12 @@ from machine_learning import run_experiment, final_testing
 
 if __name__ == '__main__':
 
-    params = {'random_state':42,
-              'min_samples_split':0.01}
-    #3 model strings, 'logistic', 'decision_tree', and 'random_forest'
-    #4 feature set strings
-    model, score, test_data = run_experiment('random_forest', params, ['base', 'safety_indicators', 'electrical_system'])
+    params = {
+            'max_iter':1000
+            #'random_state':42,
+            #'min_samples_split':0.01,
+            }
+    #3 model strings: 'logistic', 'decision_tree', and 'random_forest'
+    #5 feature set strings: "base", 'operational_modes', 'safety_indicators', 'temperature_interactions', 'electrical_system'
+    model, score, test_data = run_experiment('logistic', params, ['base'])
     final_testing(model, test_data[0], test_data[1])
