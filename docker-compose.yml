@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d mlflowdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  minio:
+    image: minio/minio
+    expose:
+      - "9000"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    healthcheck:
+      test: timeout 5s bash -c ':> /dev/tcp/127.0.0.1/9000' || exit 1
+      interval: 1s
+      timeout: 10s
+      retries: 5
+    command: server /data --console-address :9001
+    volumes:
+      - minio_data:/data
+  minio-create-bucket:
+    image: minio/mc
+    env_file:
+      - .env
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      bash -c "
+            mc alias set minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
+            if ! mc ls minio/bucket; then
+              mc mb minio/bucket
+            else
+              echo 'bucket already exists'
+            fi
+      "
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.2.0
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-create-bucket:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - MLFLOW_S3_ENDPOINT_URL=${MLFLOW_S3_ENDPOINT_URL}
+      - AWS_DEFAULT_REGION=us-east-1
+    command: > 
+      bash -c "
+      pip install --no-cache-dir --user psycopg2-binary &&
+      pip install --no-cache-dir --user boto3 &&
+      mlflow server
+      --backend-store-uri postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/mlflowdb
+      --artifacts-destination s3://bucket/
+      --host 0.0.0.0 
+      --port 5000
+      "
+    volumes:
+        - mlflow_data:/mlflow
+volumes:
+  postgres_data:
+  minio_data:
+  mlflow_data:

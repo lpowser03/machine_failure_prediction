@@ -1,5 +1,5 @@
 # machine_failure_prediction
-Simple [Kaggle dataset](https://www.kaggle.com/datasets/umerrtx/machine-failure-prediction-using-sensor-data/data "Machine Faiilure Prediction")
+Simple [Kaggle dataset](https://www.kaggle.com/datasets/umerrtx/machine-failure-prediction-using-sensor-data/data "Machine Failure Prediction")
 
 A machine learning project focused on predicting industrial machine failures using sensor data. This project demonstrates:
 - Systematic ML experimentation with MLflow tracking
