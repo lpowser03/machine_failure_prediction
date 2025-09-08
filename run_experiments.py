@@ -17,9 +17,6 @@ if __name__ == '__main__':
     model, score, test_data = run_experiment('logistic', params)
     metrics, experiment = final_testing(model, test_data[0], test_data[1])
 
-    for k, v in metrics.items():
-        print(f'Test {k}: {v}')
-
     print(f'Run ID: {experiment.info.run_id}')
 
 

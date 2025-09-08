@@ -77,6 +77,14 @@ def run_experiment(model_type:str, model_params:dict, feature_sets:list[str]=["b
         print(f"Standard Deviation: {cv_results.std()}")
 
         model.fit(X_train, y_train)
+
+        sig_x = X_train
+        sig_y = y_train
+        signature = mlflow.models.infer_signature(sig_x, sig_y)
+
+        mlflow.sklearn.log_model(model, name="model", signature=signature)
+        mlflow.log_params(model_params)
+
         with open(f'prediction_api/model.pkl', 'wb') as f:
             pickle.dump(model, f)
 
@@ -84,7 +92,7 @@ def run_experiment(model_type:str, model_params:dict, feature_sets:list[str]=["b
 
 def final_testing(model, X_test_data, y_test_data):
     with mlflow.start_run(run_name="final_testing") as run:
-        full_test_data = pd.concat([X_test_data, y_test_data], axis=1)
+        full_test_data = pd.concat([pd.DataFrame(X_test_data), pd.Series(y_test_data)], axis=1)
         full_test_data.to_csv('prediction_api/data/test_data.csv', index=False)
 
         model.predict(X_test_data)
@@ -97,7 +105,6 @@ def final_testing(model, X_test_data, y_test_data):
             'recall': recall_score(y_test_data, y_pred)
         }
         mlflow.log_metrics(metrics)
-        mlflow.sklearn.log_model(model, "model")
 
         print(f"Accuracy Score: {metrics['accuracy']}")
         print(f"F1 Score: {metrics['f1']}")
