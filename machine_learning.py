@@ -7,12 +7,11 @@ from sklearn.model_selection import train_test_split, cross_val_score, KFold
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, make_scorer
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from cleaning import load_data, clean_data, create_features
 import mlflow
 import mlflow.sklearn
 import mlflow.data
-import pickle
 
 print("👋 run_experiments.py is running under __main__")
 
@@ -69,33 +68,31 @@ def run_experiment(model_type:str, model_params:dict, feature_sets:list[str]=["b
 
         # Train and evaluate with cross-validation
 
-        X_train, X_test, y_train, y_test = train_test_split(X.values, y.values, test_size=0.25, random_state=0)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
 
-        cv_results = cross_val_score(model, X_train, y_train, cv=KFold(n_splits=5), scoring='accuracy')
+        cv_results = cross_val_score(model, X_train.values, y_train.values, cv=KFold(n_splits=5), scoring='accuracy')
         print(f"CV Results: {cv_results}")
         print(f"Mean Accuracy: {cv_results.mean()}")
         print(f"Standard Deviation: {cv_results.std()}")
 
-        model.fit(X_train, y_train)
+        model.fit(X_train.values, y_train.values)
 
-        sig_x = X_train
-        sig_y = y_train
+        sig_x = X_train.values
+        sig_y = y_train.values
         signature = mlflow.models.infer_signature(sig_x, sig_y)
 
-        mlflow.sklearn.log_model(model, name="model", signature=signature)
+        mlflow.sklearn.log_model(model, name=f"{model_type}_model", signature=signature)
         mlflow.log_params(model_params)
-
-        with open(f'prediction_api/model.pkl', 'wb') as f:
-            pickle.dump(model, f)
 
         return model, cv_results.mean(), (X_test, y_test)
 
 def final_testing(model, X_test_data, y_test_data):
-    with mlflow.start_run(run_name="final_testing") as run:
-        full_test_data = pd.concat([pd.DataFrame(X_test_data), pd.Series(y_test_data)], axis=1)
-        full_test_data.to_csv('prediction_api/data/test_data.csv', index=False)
+    full_test_data = pd.concat([X_test_data, y_test_data], axis=1)
+    full_test_data.to_csv('prediction_api/data/test_data.csv', index=False)
 
-        model.predict(X_test_data)
+    with mlflow.start_run(run_name="final_testing") as run:
+        mlflow.log_artifact('prediction_api/data/test_data.csv', run_id=run.info.run_id)
+
         y_pred = model.predict(X_test_data)
 
         metrics = {

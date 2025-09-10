@@ -1,14 +1,13 @@
-import flask
 import pickle
+import flask
+import mlflow.sklearn
 import pandas as pd
-import numpy as np
-
 app = flask.Flask(__name__)
 
 with open('model.pkl', 'rb') as f:
-    MODEL = pickle.load(f)
+    MODEL = pickle.load(f) #mlflow.sklearn.load_model(f'runs:/251a717917964b1ebe9f74b499f47b58/logistic_model')
 
-test_data = pd.read_csv('data/test_data.csv', header=None)
+DATA = pd.read_csv('data/test_data.csv', header=None)
 
 @app.route("/")
 def home():
@@ -22,7 +21,7 @@ def home():
 
 @app.route("/predict")
 def predict():
-    sample = test_data.sample(n=1)
+    sample = DATA.sample(n=1)
 
     features = sample.values[:,:-1]
     target = sample.values[0,-1]
@@ -31,11 +30,10 @@ def predict():
     probability = MODEL.predict_proba(features)[0]
 
     return flask.jsonify({
-        'features': features.tolist(),
         'prediction': int(prediction),
         'actual': int(target),
-        'probability': probability.astype(float).tolist()[0],
+        'probability': probability.astype(float).tolist(),
     })
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
